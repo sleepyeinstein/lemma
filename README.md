@@ -78,7 +78,7 @@ Web-CLI:
 1) Open chrome and simply browse to your lambda URL w/key
 
 Terminal-CLI:
-1) While in the lemma directory: `pip3 install .`
+1) While in the lemma directory: `pip3 install .` (The Terminal-CLI is also available on pypi: `pip install lemmacli`)
 2) Invoke: `lemma`
 3) When asked about the lambda URL, paste it into the prompt. This URL will be saved at `~/.lemma/lemma.ini`
 
