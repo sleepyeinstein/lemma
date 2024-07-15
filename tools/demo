@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+import sys
+import time
+
+inp = ' '.join(sys.argv[1:])
+
+if (len(inp.strip()) == 0):
+    inp = "Hello World! I am executing on AWS Lambda. This is a demo of response streaming."
+
+sys.stdout.write("\x1b[42m")
+for char in inp:
+    sys.stdout.write(char)
+    sys.stdout.flush()
+    time.sleep(0.02)
+
+sys.stdout.write("\x1b[0m")
+
+sys.stdout.write("\n")
+sys.stdout.flush()

@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Lemma Lambda Function
+
+Globals:
+  Function:
+    Timeout: %TIMEOUT%
+
+Resources:
+  LemmaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: app/
+      Handler: run.sh
+      Runtime: python3.12
+      MemorySize: %MEMORY%
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/bootstrap
+          AWS_LWA_INVOKE_MODE: response_stream
+          LEMMA_API_KEY: %API_KEY%
+          LEMMA_TIMEOUT: %TIMEOUT%
+          HOME: /tmp
+          PORT: 8000
+      Layers:
+        - !Sub arn:aws:lambda:${AWS::Region}:753240598075:layer:LambdaAdapterLayerX86:22
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: RESPONSE_STREAM
+
+Outputs:
+  LemmaFunctionUrl:
+    Description: "Lemma Lambda Function URL"
+    Value: !Sub "LEMMA_URL:${LemmaFunctionUrl.FunctionUrl}"
+  LemmaFunction:
+    Description: "Lemma Lambda Function ARN"
+    Value: !GetAtt LemmaFunction.Arn

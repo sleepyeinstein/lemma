@@ -1,0 +1,11 @@
+#!/bin/bash
+
+export XDG_DATA_HOME=/tmp/.local/share
+export XDG_CONFIG_HOME=/tmp/.config
+export XDG_CACHE_HOME=/tmp/.cache
+
+# get the current directory of where this script is located
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# run ffuf with the new environment variables and the provided arguments
+$DIR/bin/ffuf "$@"
