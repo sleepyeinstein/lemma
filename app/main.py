@@ -13,8 +13,9 @@ import shlex
 
 app = FastAPI()
 
-# get a list of every file (not directory) in the tools directory
-tools = [f for f in os.listdir("tools") if os.path.isfile(os.path.join("tools", f))]
+# get a list of every file (not directory) with +x set in the tools directory
+tools = [f for f in os.listdir("tools") if os.path.isfile(os.path.join("tools", f)) and os.access(os.path.join("tools", f), os.X_OK)]
+
 # write it to a json file at the root of the static directory
 with open("/tmp/tools.json", "w") as f:
     json.dump(tools, f)
