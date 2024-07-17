@@ -16,8 +16,10 @@ export DISABLE_NUCLEI_TEMPLATES_AWS_DOWNLOAD=true
 # Disable download from public / private Azure Blob Storage
 export DISABLE_NUCLEI_TEMPLATES_AZURE_DOWNLOAD=true
 
-$DIR/bin/busybox unzip -d /tmp $DIR/config/nuclei-templates.zip  > /dev/null 2>&1
+
+$DIR/bin/busybox wget https://github.com/projectdiscovery/nuclei-templates/archive/refs/tags/v9.9.1.zip -O /tmp/nuclei-templates.zip > /dev/null 2>&1
+$DIR/bin/busybox unzip -d /tmp /tmp/nuclei-templates.zip > /dev/null 2>&1
 
 # This will create a /tmp/nuclei-templates-X.X.X directory, change it to /tmp/nuclei-templates
-mv /tmp/nuclei-templates-* /tmp/nuclei-templates  > /dev/null 2>&1
+mv /tmp/nuclei-templates-* /tmp/nuclei-templates > /dev/null 2>&1
 $DIR/bin/nuclei $@

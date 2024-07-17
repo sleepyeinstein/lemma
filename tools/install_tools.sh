@@ -74,10 +74,26 @@ if [ "$arch" == "x86_64" ]; then
     mv $tmpdir/nuclei ./app/tools/bin
     rm -rf $tmpdir
 
+    echo "Installing katana..."
+    tmpdir=$(mktemp -d)
+    wget https://github.com/projectdiscovery/katana/releases/download/v1.1.0/katana_1.1.0_linux_amd64.zip -O $tmpdir/katana.zip > /dev/null 2>&1
+    unzip $tmpdir/katana.zip -d $tmpdir > /dev/null 2>&1
+    mv $tmpdir/katana ./app/tools
+    rm -rf $tmpdir
+
+    echo "Installing shortscan..."
+    git clone https://github.com/bitquark/shortscan.git > /dev/null 2>&1
+    cd shortscan
+    go mod tidy > /dev/null 2>&1
+    GOARCH=amd64 go build -o ../app/tools/shortscan ./cmd/shortscan > /dev/null 2>&1
+    cd ..
+    rm -rf shortscan
+
     tmpdir=$(mktemp -d)
     wget http://ftp.us.debian.org/debian/pool/main/b/busybox/busybox_1.30.1-4_amd64.deb -O $tmpdir/busybox.deb > /dev/null 2>&1
     dpkg -x $tmpdir/busybox.deb $tmpdir > /dev/null 2>&1
     mv $tmpdir/bin/busybox ./app/tools/bin/
+    rm -rf $tmpdir
 
 elif [ "$arch" == "arm64" ]; then
 
@@ -123,17 +139,31 @@ elif [ "$arch" == "arm64" ]; then
     mv $tmpdir/nuclei ./app/tools/bin
     rm -rf $tmpdir
 
+    echo "Installing katana..."
+    tmpdir=$(mktemp -d)
+    wget https://github.com/projectdiscovery/katana/releases/download/v1.1.0/katana_1.1.0_linux_arm64.zip -O $tmpdir/katana.zip > /dev/null 2>&1
+    unzip $tmpdir/katana.zip -d $tmpdir > /dev/null 2>&1
+    mv $tmpdir/katana ./app/tools
+    rm -rf $tmpdir
+
+    echo "Installing shortscan..."
+    git clone https://github.com/bitquark/shortscan.git > /dev/null 2>&1
+    cd shortscan
+    go mod tidy > /dev/null 2>&1
+    GOARCH=arm64 go build -o ../app/tools/shortscan ./cmd/shortscan > /dev/null 2>&1
+    cd ..
+    rm -rf shortscan
+
     tmpdir=$(mktemp -d)
     wget http://ftp.us.debian.org/debian/pool/main/b/busybox/busybox_1.30.1-4_arm64.deb -O $tmpdir/busybox.deb > /dev/null 2>&1
     dpkg -x $tmpdir/busybox.deb $tmpdir > /dev/null 2>&1
     mv $tmpdir/bin/busybox ./app/tools/bin/
+    rm -rf $tmpdir
 
 fi
 
-echo "Installing nuclei-templates..."
-tmpdir=$(mktemp -d)
-wget https://github.com/projectdiscovery/nuclei-templates/archive/refs/tags/v9.9.1.zip -O ./app/tools/config/nuclei-templates.zip > /dev/null 2>&1
-
+echo "Installing smuggler..."
+git clone https://github.com/defparam/smuggler ./app/tools/bin/smuggler > /dev/null 2>&1
 
 echo "Installing SecLists's common.txt wordlist..."
 wget https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/Web-Content/common.txt -O ./app/tools/wordlists/common.txt > /dev/null 2>&1
