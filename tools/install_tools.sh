@@ -26,7 +26,6 @@ echo "Architecture specified: $arch"
 rm -rf ./app/tools
 rm -f ./app/tool_requirements.txt
 cp -rf ./tools ./app/
-mkdir -p ./app/tools/bin
 mkdir -p ./app/tools/wordlists
 touch ./app/tool_requirements.txt
 

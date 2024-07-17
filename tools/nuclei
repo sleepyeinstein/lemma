@@ -17,7 +17,7 @@ export DISABLE_NUCLEI_TEMPLATES_AWS_DOWNLOAD=true
 export DISABLE_NUCLEI_TEMPLATES_AZURE_DOWNLOAD=true
 
 
-$DIR/bin/busybox wget https://github.com/projectdiscovery/nuclei-templates/archive/refs/tags/v9.9.1.zip -O /tmp/nuclei-templates.zip > /dev/null 2>&1
+$DIR/bin/download https://github.com/projectdiscovery/nuclei-templates/archive/refs/tags/v9.9.1.zip /tmp/nuclei-templates.zip > /dev/null 2>&1
 $DIR/bin/busybox unzip -d /tmp /tmp/nuclei-templates.zip > /dev/null 2>&1
 
 # This will create a /tmp/nuclei-templates-X.X.X directory, change it to /tmp/nuclei-templates
