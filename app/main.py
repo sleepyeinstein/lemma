@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Query, Request
 from fastapi.responses import StreamingResponse, FileResponse, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import asyncio
 import os
@@ -13,6 +14,16 @@ import shlex
 
 app = FastAPI()
 
+# Allow all origins, all methods, and all headers
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # You can specify a list of allowed origins here
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+    expose_headers=["x-lemma-timeout"],  # Expose the custom header
+)
+
 # get a list of every file (not directory) with +x set in the tools directory
 tools = [f for f in os.listdir("tools") if os.path.isfile(os.path.join("tools", f)) and os.access(os.path.join("tools", f), os.X_OK)]
 
@@ -25,6 +36,11 @@ def access_allowed(request):
     ckey = request.cookies.get("LEMMA_API_KEY")
     if ckey and ckey == key:
         return None
+    # check if key is in the header field "x-lemma-api-key"
+    header_key = request.headers.get("x-lemma-api-key")
+    if header_key and header_key == key:
+        return None
+
     if key and request.query_params.get("key") == key:
         # return redirect to '/' with a cookie set
         r = Response(status_code=302, headers={"Location": "/"})

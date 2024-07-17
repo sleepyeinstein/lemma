@@ -7,6 +7,8 @@ let lineBuffer = [];
 let history = [];
 let historyIndex = -1;
 let offset = 0;
+let lambdaurl = "";
+let lemmaauth = "";
 
 function stripAnsiCodes(str) {
     // Regular expression to match ANSI escape codes
@@ -17,7 +19,11 @@ function stripAnsiCodes(str) {
 async function load_tools()
 {
     try {
-        const response = await fetch('/tools.json');
+        const response = await fetch(lambdaurl + '/tools.json', {
+            headers: {
+                "x-lemma-api-key": lemmaauth
+            }
+        });
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -94,13 +100,16 @@ async function execute_remote_tool(terminal, args) {
     const abortController = new AbortController();
 
     try {
-        const url = new URL('/runtool', window.location.origin);
+        const url = new URL('/runtool', lambdaurl);
         url.searchParams.set('cmd', encodeURIComponent(args));
         url.searchParams.set('verbose', "true");
 
         const response = await fetch(url.toString(), {
             method: 'POST',
             signal: abortController.signal,
+            headers: {
+                "x-lemma-api-key": lemmaauth
+            }
         });
 
         if (!response.body) {
@@ -108,7 +117,7 @@ async function execute_remote_tool(terminal, args) {
         }
 
         // Get the timeout from the header and set the timeout
-        const timeoutHeader = response.headers.get('X-Lemma-Timeout');
+        const timeoutHeader = response.headers.get('x-lemma-timeout');
         const timeout = parseInt(timeoutHeader, 10) * 1000; // Convert to milliseconds
 
         // Set a timeout to abort the request
@@ -188,6 +197,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Adjust terminal size when window is resized
     window.addEventListener('resize', fitTerminal);
+
+    // first lets get the LAMBDA_URL cookie using document.cookie
+    const cookies = document.cookie.split(';');
+    
+    cookies.forEach(cookie => {
+        if (cookie.includes('LEMMA_URL')) {
+            lambdaurl = cookie.split('=')[1];
+        }
+    });
+
+    cookies.forEach(cookie => {
+        if (cookie.includes('LEMMA_OVERRIDE_API_KEY')) {
+            lemmaauth = cookie.split('=')[1];
+        }
+    });
+
+    if (lambdaurl === "") {
+        // get the host name of the page
+        lambdaurl = window.location.origin
+    }
+
 
     // check if the command query has been set
     const urlParams = new URLSearchParams(window.location.search);
@@ -301,12 +331,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (command0 === 'help') {
             terminal.write('Available Local Commands:\r\n');
-            terminal.write('  \x1b[32mhelp          -\x1b[0m Show this help message\r\n');
-            terminal.write('  \x1b[32mclear         -\x1b[0m Clear the terminal\r\n');
-            terminal.write('  \x1b[32mtools         -\x1b[0m Show a list of remote tools\r\n');
-            terminal.write('  \x1b[32msize          -\x1b[0m Show or Set terminal size (i.e size, size 45x100)\r\n');
-            terminal.write('  \x1b[32mrun <args>    -\x1b[0m Run a remote tool in the current terminal\r\n');
-            terminal.write('  \x1b[32mfork <args>   -\x1b[0m Run a remote tool in a new terminal\r\n');
+            terminal.write('  \x1b[32mhelp                 -\x1b[0m Show this help message\r\n');
+            terminal.write('  \x1b[32mclear                -\x1b[0m Clear the terminal\r\n');
+            terminal.write('  \x1b[32mtools                -\x1b[0m Show a list of remote tools\r\n');
+            terminal.write('  \x1b[32msize                 -\x1b[0m Show or Set terminal size (i.e size, size 45x100)\r\n');
+            terminal.write('  \x1b[32mrun <args>           -\x1b[0m Run a remote tool in the current terminal\r\n');
+            terminal.write('  \x1b[32mfork <args>          -\x1b[0m Run a remote tool in a new terminal\r\n');
+            terminal.write('  \x1b[32mset-url <lamdaurl>   -\x1b[0m Set the lambda URL\r\n');
             terminal.write(prompt);
         } else if (command0 === 'clear') {
             terminal.clear();
@@ -320,6 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (terminalContainer.clientWidth <= 1024) {
                 truecols = 100;
             }
+            toollist = [];
             terminal.clear();
             terminal.resize(truerows, truecols);
             fitTerminal()
@@ -353,6 +385,46 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalurl = url.origin + url.pathname + "?cmd=" + encodeURIComponent(args);
             window.open(finalurl, '_blank');
             terminal.write(prompt);
+
+        } else if (command0 === 'set-url') {
+            // lets take the LAMBDA_URL and set it as a cookie called LAMBDA_URL
+            const url = command.split(' ').slice(1).join(' ').trim();
+
+            if ((url === "") || (url === undefined)) {
+                document.cookie = "LEMMA_URL=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+                document.cookie = "LEMMA_OVERRIDE_API_KEY=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+                lambdaurl = window.location.origin;
+                lemmaauth = "";
+
+                terminal.write(`\x1b[32mLambda URL reset\x1b[0m\r\n`);
+                terminal.write(prompt);
+                return
+            }
+
+            let parsedUrl;
+            try {
+                parsedUrl = new URL(url);
+            } catch (_) { 
+                terminal.write(`\x1b[31mInvalid Lambda URL:\x1b[0m ${url}\r\n`);
+                terminal.write(prompt);
+                return
+            }
+            
+            const hostname = parsedUrl.hostname;
+            const keyValue = parsedUrl.searchParams.get('key');
+
+            if (keyValue !== null) {
+                document.cookie = "LEMMA_URL=https://" + hostname + "; path=/"
+                document.cookie = "LEMMA_OVERRIDE_API_KEY=" + keyValue + "; path=/"
+                lambdaurl = "https://" + hostname;
+                lemmaauth = keyValue;
+                terminal.write(`\x1b[32mLambda URL set to:\x1b[0m ${url}\r\n`);
+                terminal.write(prompt);
+            }
+            else {
+                terminal.write(`\x1b[31mInvalid Lambda URL:\x1b[0m ${url}\r\n`);
+                terminal.write(prompt);
+            }
 
         } else if (command0 === 'run') {
             const args = command.split(' ').slice(1).join(' ');
