@@ -131,14 +131,14 @@ else
     docker build -t lemma .
 
     if [ "$1" == "delete" ]; then
-        docker run -it --rm -v ~/.aws:/root/.aws -v .:/lambda \
+        docker run -it --rm -v ~/.aws:/root/.aws -v ($pwd):/lambda \
         -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
         lemma /lambda/build.sh delete
         exit 0
     fi
 
     # forward AWS credentials to the container in both .aws and environment variables
-    docker run -it --rm -v ~/.aws:/root/.aws -v .:/lambda \
+    docker run -it --rm -v ~/.aws:/root/.aws -v ($pwd):/lambda \
     -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
     lemma /lambda/build.sh
     exit 0
