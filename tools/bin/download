@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+import sys
+import urllib.request
+
+def download_file(url, destination):
+    try:
+        urllib.request.urlretrieve(url, destination)
+    except Exception as e:
+        print(f"An error occurred: {e}", file=sys.stderr)
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python download.py <url> <destination>", file=sys.stderr)
+        sys.exit(1)
+
+    url = sys.argv[1]
+    destination = sys.argv[2]
+
+    download_file(url, destination)

@@ -1,8 +1,9 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.12-slim
+FROM --platform=linux/amd64 python:3.12-slim
 
 # Set environment variables to avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
+ENV GO111MODULE=on
 
 # Install dependencies
 RUN apt-get update && \
@@ -25,9 +26,18 @@ RUN curl -sSL https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sa
     ./sam-installation/install && \
     rm -rf sam-cli.zip sam-installation
 
+# Install the latest version of Go
+RUN wget "https://go.dev/dl/go1.22.5.linux-amd64.tar.gz" -O go.tar.gz && \
+    tar -C /usr/local -xzf go.tar.gz && \
+    rm go.tar.gz
+
+# Set Go environment variables
+ENV PATH="/usr/local/go/bin:${PATH}"
+
 # Verify installations
 RUN aws --version && \
     sam --version && \
+    go version && \
     python --version
 
 WORKDIR /lambda
