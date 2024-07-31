@@ -68,8 +68,8 @@ function lambda_timeout() {
 function lambda_memory() {
     local choice
     while true; do
-        read -p "Choose lambda memory limit (multiples of 64, 128-10240 MB) [default: 256]: " choice
-        choice=${choice:-256}
+        read -p "Choose lambda memory limit (multiples of 64, 128-10240 MB) [default: 1024]: " choice
+        choice=${choice:-1024}
         
         if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 128 ] && [ "$choice" -le 10240 ] && [ "$(($choice % 64))" -eq 0 ]; then
             # return the choice
